@@ -103,6 +103,7 @@ def game():
                 print("You win!")
             else:
                 print("Draw!")
+            return
         searcher = mcts(timeLimit=5)
         action = searcher.search(initialState=state)
         print(action)

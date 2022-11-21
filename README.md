@@ -1,0 +1,3 @@
+```shell
+python HexWuZi.py
+```

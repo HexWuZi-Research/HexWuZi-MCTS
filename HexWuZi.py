@@ -115,3 +115,4 @@ if __name__ == "__main__":
         if state.isTerminal():
             print("You lose!")
             break
+        print("Draw!")

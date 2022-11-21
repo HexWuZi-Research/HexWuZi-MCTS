@@ -82,7 +82,7 @@ def customRollout(state: HexWuZiState):
 
 #     print(action)
 
-if __name__ == "__main__":
+def game():
     display_board = np.zeros((12, 12), dtype=int)
     display_board[0, 1:] = np.arange(0, 11)
     display_board[1:, 0] = np.arange(0, 11)
@@ -90,11 +90,6 @@ if __name__ == "__main__":
     state = HexWuZiState(state=broad, player=1)
     display_board[1:, 1:] = broad
     print(display_board)
-    # action = Action(player=1, x=5, y=5)
-    # print(action)
-    # state = state.takeAction(action)
-    # display_board[1:, 1:] = state.board
-    # print(display_board)
     while True:
         text = input("Please input your position: ")
         x, y = text.split(',')
@@ -104,8 +99,10 @@ if __name__ == "__main__":
         display_board[1:,1:]=state.board
         print(display_board)
         if state.isTerminal():
-            print("You win!")
-            break
+            if state.getReward() == 1:
+                print("You win!")
+            else:
+                print("Draw!")
         searcher = mcts(timeLimit=5)
         action = searcher.search(initialState=state)
         print(action)
@@ -113,6 +110,11 @@ if __name__ == "__main__":
         display_board[1:, 1:] = state.board
         print(display_board)
         if state.isTerminal():
-            print("You lose!")
-            break
-        print("Draw!")
+            if state.getReward() == -1:
+                print("You lose!")
+            else:
+                print("Draw!")
+            return
+
+if __name__ == "__main__":
+    game()

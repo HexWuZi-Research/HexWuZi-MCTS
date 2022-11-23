@@ -1,83 +1,42 @@
-from __future__ import division
-
-from mcts import mcts
 import numpy as np
+import numba as nb
+from numba.experimental import jitclass
 from check import *
 
-
-empty_broad = np.zeros([11, 11]).astype(int)
+empty_broad = np.zeros([11, 11], dtype=int)
 for i in range(11//2):
     empty_broad[i][11-(5-i):] = 10
     empty_broad[10-i][:5-i] = 10
 
 
-class HexWuZiState():
-    def __init__(self, state=empty_broad, player=1):
-        self.board = state
-        self.currentPlayer = player
+@jitclass([('board', nb.int32[:, :]), ('player', nb.int32)])
+class HexWuZiState:
+    def __init__(self, board, player):
+        self.board = board
+        self.player = player
 
-    def __str__(self):
-        return f"Player:{self.currentPlayer} at board {self.board}"
+    def str(self):
+        return f"Player:{self.player}, Board:{self.board}"
 
-    def getCurrentPlayer(self):
-        return self.currentPlayer
+    def get_actions(self):
+        M, N = self.board.shape
+        actions = []
+        for i in range(M):
+            for j in range(N):
+                if self.board[i, j] == 0 and check_adjacent(self.board, (i, j)):
+                    actions.append((i, j))
+        return actions
 
-    def getPossibleActions(self):
-        possibleActions = []
-        for i in range(len(self.board)):
-            for j in range(len(self.board[i])):
-                if self.board[i][j] == 0 and around_check(self.board, (i, j)):
-                    possibleActions.append(
-                        Action(player=self.currentPlayer, x=i, y=j))
-        return possibleActions
+    def take_action(self, action):
+        i, j = action
+        board = self.board.copy()
+        board[i, j] = self.player
+        return HexWuZiState(board, -self.player)
 
-    def takeAction(self, action):
-        newState = HexWuZiState(state=self.board.copy(),
-                                player=self.currentPlayer * -1)
-        newState.board[action.x][action.y] = action.player
-        return newState
-
-    def isTerminal(self):
+    def is_terminal(self):
         winner, gameover = check(self.board)
         return gameover
 
-    def getReward(self):
+    def get_reward(self):
         winner, gameover = check(self.board)
         return winner
-
-
-class Action():
-    def __init__(self, player, x, y):
-        self.player = player
-        self.x = x
-        self.y = y
-
-    def __str__(self):
-        return f"Player:{self.player}, Position:{(self.x, self.y)}"
-
-    def __repr__(self):
-        return str(self)
-
-    def __eq__(self, other):
-        return self.__class__ == other.__class__ and self.x == other.x and self.y == other.y and self.player == other.player
-
-    def __hash__(self):
-        return hash((self.x, self.y, self.player))
-
-
-def customRollout(state: HexWuZiState):
-    I = state.getCurrentPlayer()
-    while not state.isTerminal():
-        pass
-
-
-# if __name__ == "__main__":
-#     broad = empty_broad.copy()
-#     broad[5,5:9]=-1
-#     broad[4,5:9]=1
-#     print(broad)
-#     state = HexWuZiState(state=broad, player=1)
-#     searcher = mcts(timeLimit=5)
-#     action = searcher.search(initialState=state, needDetails=True)
-
-#     print(action)

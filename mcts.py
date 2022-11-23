@@ -1,131 +1,133 @@
 from __future__ import division
 
-import time
-import math
+import numpy as np
 import random
+from HexWuZi import *
 
 
-def randomPolicy(state):
-    while not state.isTerminal():
-        try:
-            action = random.choice(state.getPossibleActions())
-        except IndexError:
-            raise Exception("Non-terminal state has no possible actions: " + str(state))
-        state = state.takeAction(action)
-    return state.getReward()
+def uct(child, T):
+    parent = child.parent
+    return parent.state.player * child.reward / child.nvisit + \
+        T * np.sqrt(2 * np.log(parent.nvisit) / child.nvisit)
 
 
-class treeNode():
-    def __init__(self, state, parent):
+class TreeNode:
+    def __init__(self, state, parent, action):
         self.state = state
-        self.isTerminal = state.isTerminal()
-        self.isFullyExpanded = self.isTerminal
+        self.terminal = state.is_terminal()
+        self.action = action
         self.parent = parent
-        self.numVisits = 0
-        self.totalReward = 0
+        self.nvisit = 0
+        self.reward = 0
+        self.actions = state.get_actions()
         self.children = {}
 
-    def __str__(self):
-        s=[]
-        s.append("totalReward: %s"%(self.totalReward))
-        s.append("numVisits: %d"%(self.numVisits))
-        s.append("isTerminal: %s"%(self.isTerminal))
-        s.append("possibleActions: %s"%(self.children.keys()))
-        return "%s: {%s}"%(self.__class__.__name__, ', '.join(s))
+    def select(self, T):
+        node = self
+        while not node.terminal:
+            # actions is empty, then it's full expanded, then find the best child
+            if not node.actions:
+                node = node.find_best_child(T)
+            else:
+                return node
+        return node
 
-class mcts():
-    def __init__(self, timeLimit=5, iterationLimit=None, explorationConstant=1 / math.sqrt(2),
-                 rolloutPolicy=randomPolicy):
-        if timeLimit != None:
-            if iterationLimit != None:
-                raise ValueError("Cannot have both a time limit and an iteration limit")
-            # time taken for each MCTS search in milliseconds
-            self.timeLimit = timeLimit
-            self.limitType = 'time'
-        else:
-            if iterationLimit == None:
-                raise ValueError("Must have either a time limit or an iteration limit")
-            # number of iterations of the search
-            if iterationLimit < 1:
-                raise ValueError("Iteration limit must be greater than one")
-            self.searchLimit = iterationLimit
-            self.limitType = 'iterations'
-        self.explorationConstant = explorationConstant
-        self.rollout = rolloutPolicy
+    def expand(self):
+        action = self.actions.pop()
+        child = TreeNode(self.state.take_action(action), self, action)
+        self.children[action] = child
+        return child
 
-    def search(self, initialState, needDetails=False):
-        self.root = treeNode(initialState, None)
+    def backpropogate(self, reward):
+        node = self
+        while node is not None:
+            node.nvisit += 1
+            node.reward += reward
+            node = node.parent
+
+    def find_best_child(self, T):
+        best_value = -np.inf
+        best_nodes = []
+        for child in self.children.values():
+            value = uct(child, T)
+            if value > best_value:
+                best_value = value
+                best_nodes = [child]
+            elif value == best_value:
+                best_nodes.append(child)
+        return random.choice(best_nodes)
+
+
+def random_rollout(state: HexWuZiState):
+    while not state.is_terminal():
+        try:
+            action = random.choice(state.get_actions())
+        except IndexError:
+            raise Exception(
+                f"Non-terminal state has no possible actions: {state.str()}")
+        state = state.take_action(action)
+    return state.get_reward()
+
+
+class MCTS:
+    def __init__(self, time_limit=5, T=1/np.sqrt(2),
+                 rollout_method=random_rollout):
+        self.time_limit = time_limit
+        self.T = T
+        self.rollout = rollout_method
+
+    def search(self, init_state, need_details=False):
+        self.root = TreeNode(init_state, None, None)
         excuted_times = 0
-        if self.limitType == 'time':
-            timeLimit = time.time() + self.timeLimit
-            while time.time() < timeLimit:
-                self.executeRound()
-                excuted_times += 1
-        else:
-            for i in range(self.searchLimit):
-                self.executeRound()
-                excuted_times += 1
+        time_limit = time.time() + self.time_limit
+        while time.time() < time_limit:
+            self.round()
+            excuted_times += 1
 
-        bestChild = self.getBestChild(self.root, 0)
-        action=(action for action, node in self.root.children.items() if node is bestChild).__next__()
-        if needDetails:
+        best_child = self.root.find_best_child(0)
+        action = best_child.action
+        if need_details:
             return action, {
-                "expectedReward": bestChild.totalReward / bestChild.numVisits,
+                "expectedReward": best_child.reward / best_child.nvisit,
                 "excutedTimes": excuted_times,
                 "root": self.root
             }
         else:
             return action
 
-    def executeRound(self):
-        """
-            execute a selection-expansion-simulation-backpropagation round
-        """
-        node = self.selectNode(self.root)
+    def round(self):
+        node = self.root.select(self.T)
+        if not node.terminal:
+            node = node.expand()
         reward = self.rollout(node.state)
-        self.backpropogate(node, reward)
+        node.backpropogate(reward)
 
-    def selectNode(self, node):
-        while not node.isTerminal:
-            if node.isFullyExpanded:
-                node = self.getBestChild(node, self.explorationConstant)
-            else:
-                return self.expand(node)
-        # return node
-        # if not node.isTerminal:
-        #     if node.isFullyExpanded:
-        #         return self.getBestChild(node, self.explorationConstant)
-        #     else:
-        #         return self.expand(node)
-        return node
 
-    def expand(self, node):
-        actions = node.state.getPossibleActions()
-        for action in actions:
-            if action not in node.children:
-                newNode = treeNode(node.state.takeAction(action), node)
-                node.children[action] = newNode
-                if len(actions) == len(node.children):
-                    node.isFullyExpanded = True
-                return newNode
+def self_play():
+    display_board = np.zeros((12, 12), dtype=int)
+    display_board[0, 1:] = np.arange(0, 11)
+    display_board[1:, 0] = np.arange(0, 11)
+    broad = empty_broad.copy()
+    broad[5, 5] = 1
+    state = HexWuZiState(broad, -1)
+    display_board[1:, 1:] = broad
+    print(display_board)
+    searcher = MCTS(time_limit=5)
+    while True:
+        currentPlayer = state.player
+        print(f"AI:{currentPlayer} is searching...")
+        action, detail = searcher.search(init_state=state, need_details=True)
+        print(action, detail)
+        state = state.take_action(action)
+        display_board[1:, 1:] = state.board
+        print(display_board)
+        if state.is_terminal():
+            if state.get_reward() == currentPlayer:
+                print(f"AI:{currentPlayer} win!")
+                return
+            break
+    print("Draw!")
 
-        raise Exception("Should never reach here")
 
-    def backpropogate(self, node, reward):
-        while node is not None:
-            node.numVisits += 1
-            node.totalReward += reward
-            node = node.parent
-
-    def getBestChild(self, node, explorationValue):
-        bestValue = float("-inf")
-        bestNodes = []
-        for child in node.children.values():
-            nodeValue = node.state.getCurrentPlayer() * child.totalReward / child.numVisits + explorationValue * math.sqrt(
-                2 * math.log(node.numVisits) / child.numVisits)
-            if nodeValue > bestValue:
-                bestValue = nodeValue
-                bestNodes = [child]
-            elif nodeValue == bestValue:
-                bestNodes.append(child)
-        return random.choice(bestNodes)
+if __name__ == "__main__":
+    self_play()

@@ -13,24 +13,25 @@ def check_single(line):
                 return player
     return 0
 
-@njit 
-def around_check(board,pos):
+
+@njit
+def check_adjacent(board, pos):
+    """Check whether given position is adjacent to exist pieces"""
     END = len(board) - 1
-    x,y = pos
-    if x != 0 and y != 0 and board[x-1,y-1] in (-1,1):
+    x, y = pos
+    if x != 0 and board[x-1, y] in (-1, 1):
         return True
-    if x != 0 and board[x-1,y]in (-1,1):
+    if y != 0 and board[x, y-1] in (-1, 1):
         return True
-    if y != 0 and board[x,y-1]in (-1,1):
+    if x != 0 and y != 0 and board[x-1, y-1] in (-1, 1):
         return True
-    if y != END and board[x,y+1] in (-1,1):
+    if y != END and board[x, y+1] in (-1, 1):
         return True
-    if x != END and board[x+1,y] in (-1,1):
+    if x != END and board[x+1, y] in (-1, 1):
         return True
-    if x!= END and y != END and board[x+1,y+1] in (-1,1):
+    if x != END and y != END and board[x+1, y+1] in (-1, 1):
         return True
     return False
-
 
 
 @njit
@@ -50,7 +51,7 @@ def check(board):
         winner = check_single(board[i-5:, i])
         if winner != 0:
             return winner, True
-    for k in range(-5,6):
+    for k in range(-5, 6):
         winner = check_single(np.diag(board, k))
         if winner != 0:
             return winner, True
@@ -58,6 +59,7 @@ def check(board):
     if not 0 in board:
         return 0, True
     return 0, False
+
 
 if __name__ == "__main__":
     board = np.zeros([11, 11]).astype(int)

@@ -1,18 +1,17 @@
-from __future__ import division
-
-from mcts import mcts
 import numpy as np
-from HexWuZi import *
+from argparse import ArgumentParser
+from MCTS import *
 
 
-def game():
+def game(time_limit=5):
     display_board = np.zeros((12, 12), dtype=int)
     display_board[0, 1:] = np.arange(0, 11)
     display_board[1:, 0] = np.arange(0, 11)
     broad = empty_broad.copy()
-    state = HexWuZiState(state=broad, player=1)
+    state = HexWuZiState(broad, 1)
     display_board[1:, 1:] = broad
     print(display_board)
+    searcher = MCTS(time_limit=time_limit)
     while True:
         while True:
             text = input("Please input your position: ")
@@ -29,31 +28,34 @@ def game():
                 print("Please input postion in integer!")
                 continue
             if state.board[x,y] == 0:
-                action = Action(player=1, x=x, y=y)
+                action = (x,y)
                 break
             print(f"({x},{y}) is not available! Input again")
-        print(action)
-        state = state.takeAction(action)
+        print(state.player, action)
+        state = state.take_action(action)
         display_board[1:,1:]=state.board
         print(display_board)
-        if state.isTerminal():
-            if state.getReward() == 1:
+        if state.is_terminal():
+            if state.get_reward() == 1:
                 print("You win!")
                 return
             break
         print("AI is searching...")
-        searcher = mcts(timeLimit=5)
-        action,detail = searcher.search(initialState=state,needDetails=True)
-        print(action,detail)
-        state = state.takeAction(action)
+        action, detail = searcher.search(init_state=state, need_details=True)
+        print(state.player, action, detail)
+        state = state.take_action(action)
         display_board[1:, 1:] = state.board
         print(display_board)
-        if state.isTerminal():
-            if state.getReward() == -1:
+        if state.is_terminal():
+            if state.get_reward() == -1:
                 print("You lose!")
                 return
             break
     print("Draw!")
 
 if __name__ == "__main__":
-    game()
+    parser = ArgumentParser()
+    parser.add_argument("-t", "--time_limit", type=float, default=5.,
+                    help="set time limit for AI")
+    args = parser.parse_args()
+    game(time_limit=args.time_limit)

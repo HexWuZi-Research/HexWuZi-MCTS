@@ -1,8 +1,8 @@
-# HexWuZi
+# HexWuZi-MCST
 
 ## Intro
 
-The basic demo of Monte carlo tree search on Hexgonal WuZi(Five in a Row)
+The basic demo of using Monte carlo tree search to play Hexgonal WuZi(Five in a Row).
 
 ## Dependency
 
@@ -12,12 +12,20 @@ We use numba to accelerate, so you should install it.
 pip install -r requirements.txt
 ```
 
-## Play in command line
+## AI self-play
 
-Run this command in a terminal
+Run this command in a terminal,
 
 ```shell
-python GameInCMD.py
+python mcts.py
+```
+
+## Play in command line with AI
+
+Run this command in a terminal,
+
+```shell
+python cmgame.py
 ```
 
 Just input position in form of "5,5" or "4 6".

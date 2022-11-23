@@ -1,6 +1,6 @@
 import numpy as np
 from argparse import ArgumentParser
-from MCTS import *
+from mcts import *
 
 
 def game(time_limit=5):

@@ -58,17 +58,6 @@ class TreeNode:
         return random.choice(best_nodes)
 
 
-def random_rollout(state: HexWuZiState):
-    while not state.is_terminal():
-        try:
-            action = random.choice(state.get_actions())
-        except IndexError:
-            raise Exception(
-                f"Non-terminal state has no possible actions: {state.str()}")
-        state = state.take_action(action)
-    return state.get_reward()
-
-
 class MCTS:
     def __init__(self, time_limit=5, T=1/np.sqrt(2),
                  rollout_method=random_rollout):

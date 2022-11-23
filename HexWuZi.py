@@ -1,6 +1,7 @@
 import numpy as np
 import numba as nb
 from numba.experimental import jitclass
+import random
 from check import *
 
 empty_broad = np.zeros([11, 11], dtype=int)
@@ -40,3 +41,14 @@ class HexWuZiState:
     def get_reward(self):
         winner, gameover = check(self.board)
         return winner
+
+
+def random_rollout(state: HexWuZiState):
+    while not state.is_terminal():
+        try:
+            action = random.choice(state.get_actions())
+        except IndexError:
+            raise Exception(
+                f"Non-terminal state has no possible actions: {state.str()}")
+        state = state.take_action(action)
+    return state.get_reward()

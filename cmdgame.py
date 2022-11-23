@@ -23,20 +23,21 @@ def game(time_limit=5):
                 print('Please input position in form: "x,y" or "x y"!')
                 continue
             try:
-                x,y = int(x),int(y)
+                x, y = int(x), int(y)
             except ValueError:
                 print("Please input postion in integer!")
                 continue
-            if state.board[x,y] == 0:
-                action = (x,y)
+            if state.board[x, y] == 0:
+                action = (x, y)
                 break
             print(f"({x},{y}) is not available! Input again")
         print(state.player, action)
         state = state.take_action(action)
-        display_board[1:,1:]=state.board
+        display_board[1:, 1:] = state.board
         print(display_board)
-        if state.is_terminal():
-            if state.get_reward() == 1:
+        winner, gameover = check(state.board)
+        if gameover:
+            if winner == 1:
                 print("You win!")
                 return
             break
@@ -46,16 +47,18 @@ def game(time_limit=5):
         state = state.take_action(action)
         display_board[1:, 1:] = state.board
         print(display_board)
-        if state.is_terminal():
-            if state.get_reward() == -1:
+        winner, gameover = check(state.board)
+        if gameover:
+            if winner == -1:
                 print("You lose!")
                 return
             break
     print("Draw!")
 
+
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("-t", "--time_limit", type=float, default=5.,
-                    help="set time limit for AI")
+                        help="set time limit for AI")
     args = parser.parse_args()
     game(time_limit=args.time_limit)

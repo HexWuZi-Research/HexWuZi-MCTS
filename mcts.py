@@ -110,8 +110,9 @@ def self_play():
         state = state.take_action(action)
         display_board[1:, 1:] = state.board
         print(display_board)
-        if state.is_terminal():
-            if state.get_reward() == currentPlayer:
+        winner, gameover = check(state.board)
+        if gameover:
+            if winner == currentPlayer:
                 print(f"AI:{currentPlayer} win!")
                 return
             break

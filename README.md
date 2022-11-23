@@ -25,7 +25,7 @@ python mcts.py
 Run this command in a terminal,
 
 ```shell
-python cmgame.py
+python cmdgame.py
 ```
 
 Just input position in form of "5,5" or "4 6".

@@ -4,13 +4,13 @@ from numba.experimental import jitclass
 import random
 from check import *
 
-empty_broad = np.zeros([11, 11], dtype=int)
+empty_broad = np.zeros([11, 11], dtype=np.intc)
 for i in range(11//2):
     empty_broad[i][11-(5-i):] = 10
     empty_broad[10-i][:5-i] = 10
 
 
-@jitclass([('board', nb.int32[:, :]), ('player', nb.int32)])
+@jitclass([('board', nb.intc[:, :]), ('player', nb.intc)])
 class HexWuZiState:
     def __init__(self, board, player):
         self.board = board

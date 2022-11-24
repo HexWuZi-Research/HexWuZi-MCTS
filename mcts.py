@@ -19,21 +19,21 @@ class TreeNode:
         self.parent = parent
         self.nvisit = 0
         self.reward = 0
-        self.actions = state.get_actions()
+        self.untried_actions = state.get_actions()
         self.children = {}
 
     def select(self, T):
         node = self
         while not node.terminal:
             # actions is empty, then it's full expanded, then find the best child
-            if not node.actions:
+            if not node.untried_actions:
                 node = node.find_best_child(T)
             else:
                 return node
         return node
 
     def expand(self):
-        action = self.actions.pop()
+        action = self.untried_actions.pop()
         child = TreeNode(self.state.take_action(action), self, action)
         self.children[action] = child
         return child
@@ -77,8 +77,8 @@ class MCTS:
         action = best_child.action
         if need_details:
             return action, {
-                "expectedReward": best_child.reward / best_child.nvisit,
-                "excutedTimes": excuted_times,
+                "expected_reward": best_child.reward / best_child.nvisit,
+                "excuted_times": excuted_times,
                 "root": self.root
             }
         else:
@@ -93,7 +93,7 @@ class MCTS:
 
 
 def self_play():
-    display_board = np.zeros((12, 12), dtype=int)
+    display_board = np.zeros((12, 12), dtype=np.int)
     display_board[0, 1:] = np.arange(0, 11)
     display_board[1:, 0] = np.arange(0, 11)
     broad = empty_broad.copy()

@@ -42,7 +42,7 @@ def game(time_limit=5):
                 return
             break
         print("AI is searching...")
-        action, detail = searcher.search(init_state=state, need_details=True)
+        action, detail = searcher.search(state=state, enemy_action=action, need_details=True)
         print(state.player, action, detail)
         state = state.take_action(action)
         display_board[1:, 1:] = state.board

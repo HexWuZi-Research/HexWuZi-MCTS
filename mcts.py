@@ -1,18 +1,18 @@
-from __future__ import division
+from __future__ import division, annotations
 
 import numpy as np
 import random
 from HexWuZi import *
 
 
-def uct(child, T):
+def uct(child: TreeNode, T):
     parent = child.parent
     return parent.state.player * child.reward / child.nvisit + \
         T * np.sqrt(2 * np.log(parent.nvisit) / child.nvisit)
 
 
 class TreeNode:
-    def __init__(self, state, parent, action):
+    def __init__(self, state: HexWuZiState, parent: TreeNode, action):
         self.state = state
         self.terminal = state.is_terminal()
         self.action = action
@@ -40,12 +40,12 @@ class TreeNode:
 
     def backpropogate(self, reward):
         node = self
-        while node is not None:
+        while node:
             node.nvisit += 1
             node.reward += reward
             node = node.parent
 
-    def find_best_child(self, T):
+    def find_best_child(self, T) -> TreeNode:
         best_value = -np.inf
         best_nodes = []
         for child in self.children.values():
@@ -64,25 +64,35 @@ class MCTS:
         self.time_limit = time_limit
         self.T = T
         self.rollout = rollout_method
+        self.root: TreeNode = None
+        self.our_action = None
 
-    def search(self, init_state, need_details=False):
-        self.root = TreeNode(init_state, None, None)
+    def search(self, state: HexWuZiState, enemy_action=None, need_details=False):
+        inherited = False
+        # ! try to utilize existed node in the tree
+        if enemy_action and self.root:
+            node = self.root.children[self.our_action]
+            if enemy_action in node.children:
+                node = node.children[enemy_action]
+                node.parent = None
+                inherited = True
+        self.root = node if inherited else TreeNode(state, None, None)
         excuted_times = 0
         time_limit = time.time() + self.time_limit
         while time.time() < time_limit:
             self.round()
             excuted_times += 1
-
         best_child = self.root.find_best_child(0)
-        action = best_child.action
+        self.our_action = best_child.action
         if need_details:
-            return action, {
+            return self.our_action, {
+                "use_existed_node": inherited,
                 "expected_reward": best_child.reward / best_child.nvisit,
                 "excuted_times": excuted_times,
                 "root": self.root
             }
         else:
-            return action
+            return self.our_action
 
     def round(self):
         node = self.root.select(self.T)
@@ -105,7 +115,7 @@ def self_play():
     while True:
         currentPlayer = state.player
         print(f"AI:{currentPlayer} is searching...")
-        action, detail = searcher.search(init_state=state, need_details=True)
+        action, detail = searcher.search(state=state, need_details=True)
         print(action, detail)
         state = state.take_action(action)
         display_board[1:, 1:] = state.board

@@ -43,6 +43,7 @@ class HexWuZiState:
         return winner
 
 
+
 def random_rollout(state: HexWuZiState):
     while not state.is_terminal():
         try:

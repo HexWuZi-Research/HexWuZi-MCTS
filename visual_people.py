@@ -3,8 +3,6 @@ import pygame
 import numpy as np
 from HexWuZi import *
 from mcts import *
-from argparse import ArgumentParser
-import time
 
 
 def visual_coordinates():

@@ -41,19 +41,17 @@ def visual_coordinates():
     return XY
 
 def displayBoard():
-    
+    pygame.init()
+    # 设置主屏窗口
+    screen = pygame.display.set_mode((640,560))
+    # 设置窗口的标题，即游戏名称
+    pygame.display.set_caption('HexWuZi')
     verts = visual_coordinates()
     all_verts = []
 
     for i in verts:
         for j in i:
             all_verts.append(j)
-
-    pygame.init()
-    # 设置主屏窗口
-    screen = pygame.display.set_mode((640,560))
-    # 设置窗口的标题，即游戏名称
-    pygame.display.set_caption('HexWuZi')
 
     screen_color= '#E7B941'
     line_color = '#000000'
@@ -79,6 +77,14 @@ def displayBoard():
                 if sum((i-j)**2) < 3900:
                     pygame.draw.line(screen,line_color,i,j,2)
 
+        for i in range(len(state.board)):
+            for j in range(len(state.board)):
+                if state.board[i][j] == 1:
+                    pygame.draw.circle(screen, "#000000",all_verts[11*i+j], 18,0)
+                if state.board[i][j] == -1:
+                    pygame.draw.circle(screen, "#FFFFFF",all_verts[11*i+j], 18,0)
+        pygame.display.flip()
+
         currentPlayer = state.player
         print(f"AI:{currentPlayer} is searching...")
         action, detail = searcher.search(state, need_details=True)
@@ -93,13 +99,7 @@ def displayBoard():
                 return
             break
 
-        for i in range(len(state.board)):
-            for j in range(len(state.board)):
-                if state.board[i][j] == 1:
-                    pygame.draw.circle(screen, "#000000",all_verts[11*i+j], 18,0)
-                if state.board[i][j] == -1:
-                    pygame.draw.circle(screen, "#FFFFFF",all_verts[11*i+j], 18,0)
-        pygame.display.flip()
+
 
 
 if __name__ == "__main__":

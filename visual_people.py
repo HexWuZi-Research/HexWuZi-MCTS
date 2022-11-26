@@ -128,25 +128,6 @@ def displayboard_people(time_limit=5):
             flag=False
             tim=0
 
-        # while True:
-        #     text = input("Please input your position: ")
-        #     if "," in text:
-        #         x, y = text.split(',')
-        #     elif " " in text:
-        #         x, y = text.split(" ")
-        #     else:
-        #         print('Please input position in form: "x,y" or "x y"!')
-        #         continue
-        #     try:
-        #         x, y = int(x), int(y)
-        #     except ValueError:
-        #         print("Please input postion in integer!")
-        #         continue
-        #     if state.board[x, y] == 0:
-        #         action = (x, y)
-        #         break
-        #     print(f"({x},{y}) is not available! Input again")
-
         if validflag:
             print(state.player, action)
             state = state.take_action(action)
@@ -156,8 +137,10 @@ def displayboard_people(time_limit=5):
                 for j in range(len(state.board)):
                     if state.board[i][j] == 1:
                         pygame.draw.circle(screen, "#000000",all_verts[11*i+j], 18,0)
+                        pygame.draw.circle(screen, "#808080",all_verts[11*i+j], 18,1)
                     if state.board[i][j] == -1:
                         pygame.draw.circle(screen, "#FFFFFF",all_verts[11*i+j], 18,0)
+                        pygame.draw.circle(screen, "#808080",all_verts[11*i+j], 18,1)
             pygame.display.update()
             winner, gameover = check(state.board)
             if gameover:
@@ -174,7 +157,7 @@ def displayboard_people(time_limit=5):
             winner, gameover = check(state.board)
             if gameover:
                 if winner == -1:
-                    print("You lose!")
+                    print("HaHaHaHaHaHaHaHaHaHa! You lose!\n"*5)
                     return
                 break
 

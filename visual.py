@@ -81,8 +81,10 @@ def displayBoard():
             for j in range(len(state.board)):
                 if state.board[i][j] == 1:
                     pygame.draw.circle(screen, "#000000",all_verts[11*i+j], 18,0)
+                    pygame.draw.circle(screen, "#808080",all_verts[11*i+j], 18,1)
                 if state.board[i][j] == -1:
                     pygame.draw.circle(screen, "#FFFFFF",all_verts[11*i+j], 18,0)
+                    pygame.draw.circle(screen, "#808080",all_verts[11*i+j], 18,1)
         pygame.display.flip()
 
         currentPlayer = state.player

@@ -40,7 +40,7 @@ class HexWuZiState:
 
     def get_reward(self):
         winner, gameover = check(self.board)
-        return winner
+        return winner*91/(len(np.nonzero(self.board)[0])-30)
 
 
 

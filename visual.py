@@ -81,7 +81,7 @@ def displayBoard():
 
         currentPlayer = state.player
         print(f"AI:{currentPlayer} is searching...")
-        action, detail = searcher.search(init_state=state, need_details=True)
+        action, detail = searcher.search(state, need_details=True)
         print(action, detail)
         state = state.take_action(action)
         display_board[1:, 1:] = state.board

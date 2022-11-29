@@ -100,34 +100,3 @@ class MCTS:
             node = node.expand()
         reward = self.rollout(node.state)
         node.backpropogate(reward)
-
-
-def self_play():
-    display_board = np.zeros((12, 12), dtype=np.int)
-    display_board[0, 1:] = np.arange(0, 11)
-    display_board[1:, 0] = np.arange(0, 11)
-    broad = empty_broad.copy()
-    broad[5, 5] = 1
-    state = HexWuZiState(broad, -1)
-    display_board[1:, 1:] = broad
-    print(display_board)
-    searcher = MCTS(time_limit=5)
-    while True:
-        currentPlayer = state.player
-        print(f"AI:{currentPlayer} is searching...")
-        action, detail = searcher.search(state=state, need_details=True)
-        print(action, detail)
-        state = state.take_action(action)
-        display_board[1:, 1:] = state.board
-        print(display_board)
-        winner, gameover = check(state.board)
-        if gameover:
-            if winner == currentPlayer:
-                print(f"AI:{currentPlayer} win!")
-                return
-            break
-    print("Draw!")
-
-
-if __name__ == "__main__":
-    self_play()

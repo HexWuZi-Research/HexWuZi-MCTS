@@ -16,9 +16,6 @@ class HexWuZiState:
         self.board = board
         self.player = player
 
-    def str(self):
-        return f"Player:{self.player}, Board:{self.board}"
-
     def get_actions(self):
         M, N = self.board.shape
         actions = []
@@ -46,10 +43,6 @@ class HexWuZiState:
 
 def random_rollout(state: HexWuZiState):
     while not state.is_terminal():
-        try:
-            action = random.choice(state.get_actions())
-        except IndexError:
-            raise Exception(
-                f"Non-terminal state has no possible actions: {state.str()}")
+        action = random.choice(state.get_actions())
         state = state.take_action(action)
     return state.get_reward()

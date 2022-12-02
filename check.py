@@ -33,6 +33,29 @@ def check_adjacent(board, pos):
         return True
     return False
 
+@njit
+def check_adjacent2(board, pos):
+    ''' almost the same as check_adjacent()
+        but extend the range to 2 laps'''
+    x, y = pos
+    END = len(board) - 2
+    if check_adjacent(board, pos):
+        return True
+    else:
+        if x > 1 and board[x-2, y] in (-1, 1):
+            return True
+        if y > 1 and board[x, y-2] in (-1, 1):
+            return True
+        if x > 0 and y > 0 and board[x-2, y-2] in (-1, 1):
+            return True
+        if y < END and board[x, y+2] in (-1, 1):
+            return True
+        if x < END and board[x+2, y] in (-1, 1):
+            return True
+        if x < END and y < END and board[x+2, y+2] in (-1, 1):
+            return True
+        return False
+
 
 @njit
 def check(board):

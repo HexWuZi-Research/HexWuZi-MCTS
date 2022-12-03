@@ -1,7 +1,7 @@
 import numpy as np
 import numba as nb
 from numba.experimental import jitclass
-import random
+# import random
 from check import *
 
 empty_broad = np.zeros([11, 11], dtype=np.intc)
@@ -40,9 +40,11 @@ class HexWuZiState:
         return winner*91/(len(np.nonzero(self.board)[0])-30)
 
 
-
+@njit
 def random_rollout(state: HexWuZiState):
     while not state.is_terminal():
-        action = random.choice(state.get_actions())
+        actions = state.get_actions()
+        action = actions[np.random.randint(len(actions))]
+        # action = random.choice(actions)
         state = state.take_action(action)
     return state.get_reward()

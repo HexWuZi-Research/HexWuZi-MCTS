@@ -35,7 +35,11 @@ class TreeNode:
     def expand(self):
         action = self.untried_actions.pop()
         child = TreeNode(self.state.take_action(action), self, action)
-        self.children[action] = child
+        if child.terminal:
+            self.children = {action: child}
+            self.untried_actions = None
+        else:
+            self.children[action] = child
         return child
 
     def backpropogate(self, reward):

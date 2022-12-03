@@ -21,7 +21,7 @@ class HexWuZiState:
         actions = []
         for i in range(M):
             for j in range(N):
-                if self.board[i, j] == 0 and check_adjacent2(self.board, (i, j)):
+                if self.board[i, j] == 0 and check_adjacent(self.board, (i, j)):
                     actions.append((i, j))
         return actions
 

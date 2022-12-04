@@ -31,20 +31,21 @@ class HexWuZiState:
         board[i, j] = self.player
         return HexWuZiState(board, -self.player)
 
-    def is_terminal(self):
-        winner, gameover = check(self.board)
+    def is_terminal(self, action=None):
+        winner, gameover = check(self.board, action)
         return gameover
 
-    def get_reward(self):
-        winner, gameover = check(self.board)
+    def get_reward(self, action=None):
+        winner, gameover = check(self.board, action)
         return winner*91/(len(np.nonzero(self.board)[0])-30)
 
 
 @njit
 def random_rollout(state: HexWuZiState):
-    while not state.is_terminal():
+    action = None
+    while not state.is_terminal(action):
         actions = state.get_actions()
         action = actions[np.random.randint(len(actions))]
         # action = random.choice(actions)
         state = state.take_action(action)
-    return state.get_reward()
+    return state.get_reward(action)

@@ -83,102 +83,94 @@ def check(board):
         return 0, True
     return 0, False
 
-# @njit
-def strategy34_hor(board, pos, p):
-    '''check 34strategy horizontally'''
-    strategy_seq5 = [[0,p,p,p,0], [p,p,0,p,p], [0,p,p,p,p], [p,p,p,p,0], [p,0,p,p,p], [p,p,p,0,p]]
-    strategy_seq6 = [[0,p,0,p,p,0], [0,p,p,0,p,0]]
-    a5 = [[0, 4], [2], [0], [4], [1], [3]]
-    a6 = [[0, 2, 5], [0, 3, 5]]
-    action = []
-    board = np.array(board, dtype=np.intc)
-    m5 = len(board) - 5
-    m6 = len(board) - 6
-    i, j = pos
-    if j <= m6:
-        if list(board[i, j:j+6]) in strategy_seq6:
-            a = strategy_seq6.index(list(board[i, j:j+6]))
-            for k in range(len(a6[a])):
-                action.append((i, j+a6[a][k]))
-            return True, action
-        elif list(board[i, j:j+5]) in strategy_seq5:
-            a = strategy_seq5.index(list(board[i, j:j+5]))
-            for k in range(len(a5[a])):
-                action.append((i, j+a5[a][k]))
-            return True, action
+@njit
+def check_strategy(line, p):
+    if list(line).count(p) >= 4 and list(line).count(-p) == 0:
+        position = np.where(line == 0)[0]
+        return True, position
     
-    if j == m5:
-        if list(board[i, j:j+5]) in strategy_seq5:
-            a = strategy_seq5.index(list(board[i, j:j+5]))
-            for k in range(len(a5[a])):
-                action.append((i, j+a5[a][k]))
-            return True, action
+    if list(line).count(p) == 3 and list(line).count(-p) == 0:
+        position = np.where(line == 0)[0]
+        m = len(line) - 1
+        if 0 in list(position) and m in list(position) and line[m-1] == p and line[1] == p:
+            return True, position
+        else:
+            return False, None
+        
     return False, None
 
+@njit
+def check(board):
+    # check if anybody win
+    for i in range(6):
+        winner = check_single(board[i, :i+6])
+        if winner != 0:
+            return winner, True
+        winner = check_single(board[:i+6, i])
+        if winner != 0:
+            return winner, True
+    for i in range(6, 11):
+        winner = check_single(board[i, i-5:])
+        if winner != 0:
+            return winner, True
+        winner = check_single(board[i-5:, i])
+        if winner != 0:
+            return winner, True
+    for k in range(-5, 6):
+        winner = check_single(np.diag(board, k))
+        if winner != 0:
+            return winner, True
+    # check if terminated when nobody win
+    if not 0 in board:
+        return 0, True
+    return 0, False
 
-# @njit
-def strategy34_ver(board, pos, p):
-    '''check 34strategy vertically'''
-    strategy_seq5 = [[0,p,p,p,0], [p,p,0,p,p], [0,p,p,p,p], [p,p,p,p,0], [p,0,p,p,p], [p,p,p,0,p]]
-    strategy_seq6 = [[0,p,0,p,p,0], [0,p,p,0,p,0]]
-    a5 = [[0, 4], [2], [0], [4], [1], [3]]
-    a6 = [[0, 2, 5], [0, 3, 5]]
-    action = []
-    board = np.array(board, dtype=np.intc)
-    m5 = len(board) - 5
-    m6 = len(board) - 6
+
+@njit
+def strategy34(board, pos, p):
     i, j = pos
-    if i <= m6:
-        if list(board[i:i+6, j]) in strategy_seq6:
-            a = strategy_seq6.index(list(board[i:i+6, j]))
-            for k in range(len(a6[a])):
-                action.append((i+a6[a][k], j))
-            return True, action
-        elif list(board[i:i+5, j]) in strategy_seq5:
-            a = strategy_seq5.index(list(board[i:i+5, j]))
-            for k in range(len(a5[a])):
-                action.append((i+a5[a][k], j))
-            return True, action
+    actions = []
+    if j < len(board) - 6:
+        hor5 = board[i, j:j+5]
+        hor6 = board[i, j:j+6]
+        if check_strategy(hor5, p)[0]:
+            position = check_strategy(hor5, p)[1]
+            for k in range(len(position)):
+                actions.append((i, j+position[k]))
+            return True, actions
+        if check_strategy(hor6, p)[0]:
+            position = check_strategy(hor6, p)[1]
+            for k in range(len(position)):
+                actions.append((i, j+position[k]))
+            return True, actions
     
-    if i == m5:
-        if list(board[i:i+5, j]) in strategy_seq5:
-            a = strategy_seq5.index(list(board[i:i+5, j]))
-            for k in range(len(a5[a])):
-                action.append((i+a5[a][k], j))
-            return True, action
-    return False, None
-
-# @njit
-def strategy34_inc(board, pos, p):
-    '''check inclined 34strateg'''
-    strategy_seq5 = [[0,p,p,p,0], [p,p,0,p,p], [0,p,p,p,p], [p,p,p,p,0], [p,0,p,p,p], [p,p,p,0,p]]
-    strategy_seq6 = [[0,p,0,p,p,0], [0,p,p,0,p,0]]
-    a5 = [[0, 4], [2], [0], [4], [1], [3]]
-    a6 = [[0, 2, 5], [0, 3, 5]]
-    action = []
-    board = np.array(board, dtype=np.intc)
-    m5 = len(board) - 5
-    m6 = len(board) - 6
-    i, j = pos
-    if i <= m6 and j <= m6:
-        if list(np.diag(board[i:i+6, j:j+6])) in strategy_seq6:
-            a = strategy_seq6.index(list(np.diag(board[i:i+6, j:j+6])))
-            for k in range(len(a6[a])):
-                action.append((i+a6[a][k], j+a6[a][k]))
-            return True, action
-        elif list(np.diag(board[i:i+5, j:j+5])) in strategy_seq5:
-            a = strategy_seq5.index(list(np.diag(board[i:i+5, j:j+5])))
-            for k in range(len(a5[a])):
-                action.append((i+a5[a][k], j+a5[a][k]))
-            return True, action
-            
-    if i == m5:
-        if list(np.diag(board[i:i+5, j:j+5])) in strategy_seq5:
-            a = strategy_seq5.index(list(np.diag(board[i:i+5, j:j+5])))
-            for k in range(len(a5[a])):
-                action.append((i+a5[a][k], j+a5[a][k]))
-            return True, action
-
+    if i < len(board) - 6:
+        ver5 = board[i:i+5, j]
+        ver6 = board[i:i+6, j]
+        if check_strategy(ver5, p)[0]:
+            position = check_strategy(ver5, p)[1]
+            for k in range(len(position)):
+                actions.append((i+position[k], j))
+            return True, actions
+        if check_strategy(ver6, p)[0]:
+            position = check_strategy(ver6, p)[1]
+            for k in range(len(position)):
+                actions.append((i+position[k], j))
+            return True, actions
+    
+    if i < len(board) - 6 and j < len(board) - 6:
+        inc5 = np.diag(board[i:i+5, j:j+5])
+        inc6 = np.diag(board[i:i+6, j:j+6])
+        if check_strategy(inc5, p)[0]:
+            position = check_strategy(inc5, p)[1]
+            for k in range(len(position)):
+                actions.append((i+position[k], j+position[k]))
+            return True, actions
+        if check_strategy(inc6, p)[0]:
+            position = check_strategy(inc6, p)[1]
+            for k in range(len(position)):
+                actions.append((i+position[k], j+position[k]))
+            return True, actions
     return False, None
 
 

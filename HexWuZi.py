@@ -21,15 +21,10 @@ class HexWuZiState:
         actions = []
         for i in range(M):
             for j in range(N):
-                if strategy34_hor(self.board, (i, j), -self.player)[0]:
-                    actions = strategy34_hor(self.board, (i, j), -self.player)[1]
-                    break
-                if strategy34_ver(self.board, (i, j), -self.player)[0]:
-                    actions = strategy34_ver(self.board, (i, j), -self.player)[1]
-                    break
-                if strategy34_inc(self.board, (i, j), -self.player)[0]:
-                    actions = strategy34_inc(self.board, (i, j), -self.player)[1]
-                    break
+                # if strategy34(self.board, (i, j), -self.player)[0]:
+                #     actions = strategy34(self.board, (i, j), -self.player)[1]
+                #     break
+                # print(strategy34(self.board, (i, j), -self.player))
                 if self.board[i, j] == 0 and check_adjacent2(self.board, (i, j)):
                     actions.append((i, j))
         return actions

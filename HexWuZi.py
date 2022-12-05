@@ -17,10 +17,13 @@ class HexWuZiState:
         self.player = player
 
     def get_actions(self):
-        M, N = self.board.shape
         actions = []
-        for i in range(M):
-            for j in range(N):
+        for i in range(6):
+            for j in range(i+6):
+                if self.board[i, j] == 0 and check_adjacent(self.board, (i, j)):
+                    actions.append((i, j))
+        for i in range(6, 11):
+            for j in range(i-5, 11):
                 if self.board[i, j] == 0 and check_adjacent(self.board, (i, j)):
                     actions.append((i, j))
         return actions

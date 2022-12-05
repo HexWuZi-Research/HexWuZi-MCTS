@@ -14,7 +14,7 @@ def uct(child: TreeNode, T):
 class TreeNode:
     def __init__(self, state: HexWuZiState, parent: TreeNode, action):
         self.state = state
-        self.terminal = state.is_terminal()
+        self.terminal = state.is_terminal(action)[0]
         self.action = action
         self.parent = parent
         self.nvisit = 0

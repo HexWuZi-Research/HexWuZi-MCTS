@@ -17,10 +17,13 @@ class HexWuZiState:
         self.player = player
 
     def get_actions(self):
-        M, N = self.board.shape
         actions = []
-        for i in range(M):
-            for j in range(N):
+        for i in range(6):
+            for j in range(i+6):
+                if self.board[i, j] == 0 and check_adjacent(self.board, (i, j)):
+                    actions.append((i, j))
+        for i in range(6, 11):
+            for j in range(i-5, 11):
                 if self.board[i, j] == 0 and check_adjacent(self.board, (i, j)):
                     actions.append((i, j))
         return actions
@@ -31,20 +34,24 @@ class HexWuZiState:
         board[i, j] = self.player
         return HexWuZiState(board, -self.player)
 
-    def is_terminal(self):
-        winner, gameover = check(self.board)
-        return gameover
+    def is_terminal(self, action=None):
+        winner, gameover = check(self.board, action)
+        return gameover, winner
 
-    def get_reward(self):
-        winner, gameover = check(self.board)
-        return winner*91/(len(np.nonzero(self.board)[0])-30)
+
+@njit
+def depth_reward(winner, board):
+    return winner*91/(np.count_nonzero(board)-30)
 
 
 @njit
 def random_rollout(state: HexWuZiState):
-    while not state.is_terminal():
+    action = None
+    while True:
+        gameover, winner = state.is_terminal(action)
+        if gameover:
+            return depth_reward(winner, state.board)
         actions = state.get_actions()
         action = actions[np.random.randint(len(actions))]
         # action = random.choice(actions)
         state = state.take_action(action)
-    return state.get_reward()

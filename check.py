@@ -58,30 +58,45 @@ def check_adjacent2(board, pos):
 
 
 @njit
-def check(board):
+def check(board, action=None):
+    if action is None:
     # check if anybody win
-    for i in range(6):
-        winner = check_single(board[i, :i+6])
+        for i in range(6):
+            winner = check_single(board[i, :i+6])
+            if winner != 0:
+                return winner, True
+            winner = check_single(board[:i+6, i])
+            if winner != 0:
+                return winner, True
+        for i in range(6, 11):
+            winner = check_single(board[i, i-5:])
+            if winner != 0:
+                return winner, True
+            winner = check_single(board[i-5:, i])
+            if winner != 0:
+                return winner, True
+        for k in range(-5, 6):
+            winner = check_single(np.diag(board, k))
+            if winner != 0:
+                return winner, True
+    else:
+        # ! fast check: just check action piece row/colunm/diag
+        i,j = action
+        winner = check_single(board[i, :i+6] if i < 6 else board[i, i-5:])
         if winner != 0:
             return winner, True
-        winner = check_single(board[:i+6, i])
+        winner = check_single(board[:j+6, j] if j < 6 else board[j-5:, j])
         if winner != 0:
             return winner, True
-    for i in range(6, 11):
-        winner = check_single(board[i, i-5:])
-        if winner != 0:
-            return winner, True
-        winner = check_single(board[i-5:, i])
-        if winner != 0:
-            return winner, True
-    for k in range(-5, 6):
-        winner = check_single(np.diag(board, k))
+        winner = check_single(np.diag(board, j-i))
         if winner != 0:
             return winner, True
     # check if terminated when nobody win
     if not 0 in board:
         return 0, True
     return 0, False
+
+
 
 
 if __name__ == "__main__":

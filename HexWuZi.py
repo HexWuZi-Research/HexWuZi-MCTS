@@ -16,14 +16,41 @@ class HexWuZiState:
         self.board = board
         self.player = player
 
+    def positions(self):
+        for i in range(6):
+            for j in range(i+6):
+                if self.board[i, j] == 0:
+                    yield i, j
+        for i in range(6, 11):
+            for j in range(i-5, 11):
+                if self.board[i, j] == 0:
+                    yield i, j
+
     def get_actions(self):
-        M, N = self.board.shape
         actions = []
-        for i in range(M):
-            for j in range(N):
-                if self.board[i, j] == 0 and check_adjacent(self.board, (i, j)):
+        block_actions = []
+        to_lost = False
+        for i, j in self.positions():
+            if check_adjacent(self.board, (i, j)):
+                # check my win point
+                self.board[i, j] = self.player
+                winner, gameover = check(self.board, (i, j))
+                self.board[i, j] = 0
+                if gameover and winner == self.player:
+                    return [(i, j)]
+                # check opponent win point
+                self.board[i, j] = -self.player
+                winner, gameover = check(self.board, (i, j))
+                self.board[i, j] = 0
+                if gameover and winner == -self.player:
+                    to_lost = True
+                    block_actions.append((i,j))
+                if not to_lost:
                     actions.append((i, j))
-        return actions
+        if to_lost:
+            return block_actions
+        else:
+            return actions
 
     def take_action(self, action):
         i, j = action

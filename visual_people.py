@@ -42,7 +42,7 @@ def visual_coordinates():
 
 
 
-def displayboard_people(time_limit=5):
+def displayboard_people(you_are_black=False, time_limit=5):
     pygame.init()
     # 设置主屏窗口
     screen = pygame.display.set_mode((640,560))
@@ -65,6 +65,9 @@ def displayboard_people(time_limit=5):
     display_board[1:, 0] = np.arange(0, 11)
     broad = empty_broad.copy()
     state = HexWuZiState(broad, 1)
+    if you_are_black:
+        action = (5,5)
+        state = state.take_action(action)
     display_board[1:, 1:] = broad
     print(display_board)
     searcher = MCTS(time_limit=time_limit)
@@ -164,7 +167,7 @@ def displayboard_people(time_limit=5):
 
 
 if __name__ == "__main__":
-    displayboard_people()
+    displayboard_people(you_are_black=False)
 
 
 

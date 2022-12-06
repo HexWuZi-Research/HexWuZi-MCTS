@@ -400,8 +400,9 @@ def displayboard_people(you_are_black=False, time_limit=5):
             if gameover:
                 if winner == -1:
                     print("HaHaHaHaHaHaHaHaHaHa! You lose!\n"*5)
-                    return
-                break
+                    
+                pygame.time.wait(1000)
+
 
     return
 
@@ -463,8 +464,9 @@ def displayBoard():
         if gameover:
             if winner == currentPlayer:
                 print(f"AI:{currentPlayer} win!")
-                return
-            break
+
+            pygame.time.wait(1000)
+
 
 def main(you_are_black=False, opponent_name = ""):
     if opponent_name == "group5_code":
@@ -473,7 +475,7 @@ def main(you_are_black=False, opponent_name = ""):
         displayboard_people(you_are_black=you_are_black)
         
 if __name__ == "__main__":
-    main(you_are_black=False,opponent_name="group5_code")
+    main(you_are_black=False, opponent_name = "group5_code")
 
 
 
